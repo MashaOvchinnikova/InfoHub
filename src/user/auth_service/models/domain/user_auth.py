@@ -15,7 +15,6 @@ class UserAuth(Base):
     Модель пользователя для аутентификации и авторизации.
     """
     __tablename__ = "user_auth"
-    __table_args__ = {"schema": "auth_service_schema"}
 
     # Основные поля
     user_id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)

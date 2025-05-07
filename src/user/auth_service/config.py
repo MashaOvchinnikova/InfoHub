@@ -1,46 +1,48 @@
 import os
-from pydantic import PostgresDsn
+
+from pydantic import PostgresDsn, RedisDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from functools import lru_cache
+
+
+service_path = os.path.dirname(os.path.abspath(__file__))
+env_file = f"{service_path}\\.env"
 
 
 class Settings(BaseSettings):
     # Service information
-    SERVICE_NAME: str = os.getenv("SERVICE_NAME", "auth_service")
+    SERVICE_NAME: str
     VERSION: str = "0.1.0"
     DESCRIPTION: str = "Authentication and Authorization Service for InfoHub"
-    PORT: int = int(os.getenv("PORT", "8001"))
+    PORT: int
 
     # Database
-    POSTGRES_USER: str = os.getenv("POSTGRES_USER", "postgres")
-    POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "postgres")
-    POSTGRES_DB: str = os.getenv("POSTGRES_DB", "infohub")
-    POSTGRES_HOST: str = os.getenv("POSTGRES_HOST", "postgres")
-    POSTGRES_PORT: int = int(os.getenv("POSTGRES_PORT", "5432"))
-
-    # Database URL and schema
-    DATABASE_SCHEMA: str = "auth_service_schema"
-    DATABASE_URL: str = "postgresql://postgres:Tomlinson91@localhost:5432/infohub"
+    DATABASE_URL: PostgresDsn | None = None
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_DB: str
+    POSTGRES_HOST: str
+    POSTGRES_PORT: int
 
     # JWT Settings
-    JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY", "super_secret_jwt_key_change_in_production")
-    JWT_ALGORITHM: str = os.getenv("JWT_ALGORITHM", "HS256")
-    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
-    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = int(os.getenv("JWT_REFRESH_TOKEN_EXPIRE_DAYS", "7"))
+    JWT_SECRET_KEY: str
+    JWT_ALGORITHM: str
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int
+    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int
 
     # Redis
-    REDIS_HOST: str = os.getenv("REDIS_HOST", "redis")
-    REDIS_PORT: int = int(os.getenv("REDIS_PORT", "6379"))
-    REDIS_DB: int = int(os.getenv("REDIS_DB", "0"))
-    REDIS_URL: str = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
+    CONNECTION_METHOD: str
+    REDIS_HOST: str
+    REDIS_PORT: int
+    REDIS_DB: int
+    REDIS_URL: RedisDsn | None = None
 
     # RabbitMQ
-    RABBITMQ_USER: str = os.getenv("RABBITMQ_USER", "guest")
-    RABBITMQ_PASSWORD: str = os.getenv("RABBITMQ_PASSWORD", "guest")
-    RABBITMQ_HOST: str = os.getenv("RABBITMQ_HOST", "rabbitmq")
-    RABBITMQ_PORT: int = int(os.getenv("RABBITMQ_PORT", "5672"))
-    RABBITMQ_VHOST: str = os.getenv("RABBITMQ_VHOST", "/")
-    RABBITMQ_URL: str = f"amqp://{RABBITMQ_USER}:{RABBITMQ_PASSWORD}@{RABBITMQ_HOST}:{RABBITMQ_PORT}/{RABBITMQ_VHOST}"
+    RABBITMQ_USER: str
+    RABBITMQ_PASSWORD: str
+    RABBITMQ_HOST: str
+    RABBITMQ_PORT: int
+    RABBITMQ_VHOST: str
+    RABBITMQ_URL: str | None = None
 
     # CORS
     CORS_ORIGINS: list = ["*"]
@@ -48,8 +50,30 @@ class Settings(BaseSettings):
     CORS_HEADERS: list = ["*"]
 
     model_config = SettingsConfigDict(
-        env_file=".env", extra="ignore", env_file_encoding="utf-8"
+        env_file=env_file, extra="ignore", env_file_encoding="utf-8"
     )
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if not self.DATABASE_URL:
+            self.DATABASE_URL = PostgresDsn.build(
+                scheme="postgresql+psycopg2",
+                username=self.POSTGRES_USER,
+                password=self.POSTGRES_PASSWORD,
+                host=self.POSTGRES_HOST,
+                port=self.POSTGRES_PORT,
+                path=self.POSTGRES_DB,
+            )
+
+        if not self.REDIS_URL:
+            self.REDIS_URL = RedisDsn.build(
+                scheme=self.CONNECTION_METHOD,
+                host=self.REDIS_HOST,
+                port=self.REDIS_PORT,
+                path=str(self.REDIS_DB)
+            )
+
+        if not self.RABBITMQ_URL:
+            self.RABBITMQ_URL = f"amqp://{self.RABBITMQ_USER}:{self.RABBITMQ_PASSWORD}@{self.RABBITMQ_HOST}:{self.RABBITMQ_PORT}/{self.RABBITMQ_VHOST}"
 
 settings = Settings()

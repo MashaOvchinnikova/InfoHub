@@ -16,7 +16,6 @@ class Collection(Base):
     Модель для коллекций пользователей.
     """
     __tablename__ = "collection"
-    __table_args__ = {"schema": "collection_service_schema"}
 
     collection_id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), nullable=False)
@@ -39,11 +38,10 @@ class CollectionSource(Base):
     Связующая модель между коллекциями и источниками.
     """
     __tablename__ = "collection_source"
-    __table_args__ = {"schema": "collection_service_schema"}
 
 
     collection_source_id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
-    collection_id = Column(UUID(as_uuid=True), ForeignKey("collection_service_schema.collection.collection_id"), nullable=False)
+    collection_id = Column(UUID(as_uuid=True), ForeignKey("collection.collection_id"), nullable=False)
     source_id = Column(UUID(as_uuid=True), nullable=False)
     added_date = Column(DateTime, default=datetime.utcnow)
     note = Column(Text, nullable=True)

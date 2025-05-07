@@ -9,14 +9,9 @@ from fastapi import Depends, HTTPException, status, Header
 
 from src.content.collection_service.config import settings
 from src.user.auth_service.models.schemas.user_auth import UserResponse
-from src.user.auth_service.services.current_user import get_current_user as get_user
 # Настройка логирования
 logger = logging.getLogger(__name__)
 
-
-# # get_current_user для тестирования
-# async def get_current_user(user: UserResponse = Depends(get_user)) -> UserResponse:
-#     return user
 
 async def get_current_user(
     authorization: Optional[str] = Header(None)

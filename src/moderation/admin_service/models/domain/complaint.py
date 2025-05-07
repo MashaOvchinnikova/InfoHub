@@ -32,7 +32,6 @@ class Complaint(Base):
     Модель для жалоб пользователей.
     """
     __tablename__ = "complaint"
-    __table_args__ = {"schema": "admin_service_schema"}
 
     complaint_id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), nullable=False)

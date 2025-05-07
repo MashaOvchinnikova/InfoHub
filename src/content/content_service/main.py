@@ -9,6 +9,9 @@ import httpx
 from elasticsearch import AsyncElasticsearch
 
 from config import settings
+from src.content.content_service.api.sources import router as source_router
+from src.content.content_service.api.tags import router as tag_router
+
 
 # Setup logging
 logging.basicConfig(
@@ -24,6 +27,9 @@ app = FastAPI(
     description=settings.DESCRIPTION,
     version=settings.VERSION,
 )
+
+app.include_router(source_router)
+app.include_router(tag_router)
 
 # Add CORS middleware
 app.add_middleware(

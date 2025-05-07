@@ -98,7 +98,7 @@ class SourceResponse(SourceBase):
     is_verified: bool
     is_recommended: bool
     avg_rating: float
-    tags: List[Tag] = []
+    # tags: List[Tag] = []
 
     class Config:
         from_attributes = True

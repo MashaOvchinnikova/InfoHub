@@ -1,34 +1,37 @@
 import os
+
+from pydantic import PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+service_path = os.path.dirname(os.path.abspath(__file__))
+env_file = f"{service_path}\\.env"
+
 
 class Settings(BaseSettings):
     # Service information
-    SERVICE_NAME: str = "profile_service"
+    SERVICE_NAME: str
     VERSION: str = "0.1.0"
     DESCRIPTION: str = "User Profile Management Service for InfoHub"
-    PORT: int = int(os.getenv("PORT", "8002"))
+    PORT: int
 
     # Database
-    POSTGRES_USER: str = os.getenv("POSTGRES_USER", "postgres")
-    POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "postgres")
-    POSTGRES_DB: str = os.getenv("POSTGRES_DB", "infohub")
-    POSTGRES_HOST: str = os.getenv("POSTGRES_HOST", "postgres")
-    POSTGRES_PORT: int = int(os.getenv("POSTGRES_PORT", "5432"))
-
-    # Database URL and schema
-    DATABASE_SCHEMA: str = "profile_service_schema"
-    DATABASE_URL: str = "postgresql://postgres:Tomlinson91@localhost:5432/infohub"
+    DATABASE_URL: PostgresDsn | None = None
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_DB: str
+    POSTGRES_HOST: str
+    POSTGRES_PORT: int
 
     # RabbitMQ
-    RABBITMQ_USER: str = os.getenv("RABBITMQ_USER", "guest")
-    RABBITMQ_PASSWORD: str = os.getenv("RABBITMQ_PASSWORD", "guest")
-    RABBITMQ_HOST: str = os.getenv("RABBITMQ_HOST", "rabbitmq")
-    RABBITMQ_PORT: int = int(os.getenv("RABBITMQ_PORT", "5672"))
-    RABBITMQ_VHOST: str = os.getenv("RABBITMQ_VHOST", "/")
-    RABBITMQ_URL: str = f"amqp://{RABBITMQ_USER}:{RABBITMQ_PASSWORD}@{RABBITMQ_HOST}:{RABBITMQ_PORT}/{RABBITMQ_VHOST}"
+    RABBITMQ_USER: str
+    RABBITMQ_PASSWORD: str
+    RABBITMQ_HOST: str
+    RABBITMQ_PORT: int
+    RABBITMQ_VHOST: str
+    RABBITMQ_URL: str | None = None
 
     # Auth Service
-    AUTH_SERVICE_URL: str = os.getenv("AUTH_SERVICE_URL", "http://auth_service:8001")
+    AUTH_SERVICE_URL: str
 
     # CORS
     CORS_ORIGINS: list = ["*"]
@@ -36,7 +39,23 @@ class Settings(BaseSettings):
     CORS_HEADERS: list = ["*"]
 
     model_config = SettingsConfigDict(
-        env_file=".env", extra="ignore", env_file_encoding="utf-8"
+        env_file=env_file, extra="ignore", env_file_encoding="utf-8"
     )
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if not self.DATABASE_URL:
+            self.DATABASE_URL = PostgresDsn.build(
+                scheme="postgresql+psycopg2",
+                username=self.POSTGRES_USER,
+                password=self.POSTGRES_PASSWORD,
+                host=self.POSTGRES_HOST,
+                port=self.POSTGRES_PORT,
+                path=self.POSTGRES_DB,
+            )
+
+        if not self.RABBITMQ_URL:
+            self.RABBITMQ_URL = f"amqp://{self.RABBITMQ_USER}:{self.RABBITMQ_PASSWORD}@{self.RABBITMQ_HOST}:{self.RABBITMQ_PORT}/{self.RABBITMQ_VHOST}"
+
 
 settings = Settings()

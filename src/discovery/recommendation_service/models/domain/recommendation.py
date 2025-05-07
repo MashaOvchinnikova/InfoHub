@@ -25,7 +25,6 @@ class UserRecommendation(Base):
     Модель для хранения персонализированных рекомендаций пользователям.
     """
     __tablename__ = "user_recommendations"
-    __table_args__ = {"schema": "recommendation_service_schema"}
 
     recommendation_id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), index=True, nullable=False)
@@ -55,7 +54,6 @@ class SimilarSource(Base):
     Модель для хранения похожих источников.
     """
     __tablename__ = "similar_sources"
-    __table_args__ = {"schema": "recommendation_service_schema"}
 
     similar_id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
     source_id = Column(UUID(as_uuid=True), index=True, nullable=False)
@@ -79,7 +77,6 @@ class PopularSource(Base):
     Модель для хранения популярных источников.
     """
     __tablename__ = "popular_sources"
-    __table_args__ = {"schema": "recommendation_service_schema"}
 
     popular_id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
     source_id = Column(UUID(as_uuid=True), index=True, nullable=False)
@@ -112,7 +109,6 @@ class InterestRecommendation(Base):
     Модель для хранения рекомендаций по интересам.
     """
     __tablename__ = "interest_recommendations"
-    __table_args__ = {"schema": "recommendation_service_schema"}
 
     recommendation_id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
     interest_id = Column(UUID(as_uuid=True), index=True, nullable=False)
@@ -135,7 +131,6 @@ class UserPreference(Base):
     Модель для хранения предпочтений пользователя (для аналитики рекомендаций).
     """
     __tablename__ = "user_preferences"
-    __table_args__ = {"schema": "recommendation_service_schema"}
 
     preference_id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), index=True, nullable=False)

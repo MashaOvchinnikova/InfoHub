@@ -1,45 +1,48 @@
 import os
-from pydantic_settings import BaseSettings
+
+from pydantic import RedisDsn, PostgresDsn
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
+
+service_path = os.path.dirname(os.path.abspath(__file__))
+env_file = f"{service_path}\\.env"
 
 
 class Settings(BaseSettings):
     # Service information
-    SERVICE_NAME: str = "recommendation_service"
+    SERVICE_NAME: str
     VERSION: str = "0.1.0"
     DESCRIPTION: str = "Content Recommendation Service for InfoHub"
-    PORT: int = int(os.getenv("PORT", "8006"))
+    PORT: int
 
     # Database
-    POSTGRES_USER: str = os.getenv("POSTGRES_USER", "postgres")
-    POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "postgres")
-    POSTGRES_DB: str = os.getenv("POSTGRES_DB", "infohub")
-    POSTGRES_HOST: str = os.getenv("POSTGRES_HOST", "postgres")
-    POSTGRES_PORT: int = int(os.getenv("POSTGRES_PORT", "5432"))
-
-    # Database URL and schema
-    DATABASE_SCHEMA: str = "recommendation_service_schema"
-    DATABASE_URL: str = "postgresql://postgres:Tomlinson91@localhost:5432/infohub"
+    DATABASE_URL: PostgresDsn | None = None
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_DB: str
+    POSTGRES_HOST: str
+    POSTGRES_PORT: int
 
     # Redis
-    REDIS_HOST: str = os.getenv("REDIS_HOST", "redis")
-    REDIS_PORT: int = int(os.getenv("REDIS_PORT", "6379"))
-    REDIS_DB: int = int(os.getenv("REDIS_DB", "0"))
-    REDIS_URL: str = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
+    CONNECTION_METHOD: str
+    REDIS_HOST: str
+    REDIS_PORT: int
+    REDIS_DB: int
+    REDIS_URL: RedisDsn | None = None
 
     # RabbitMQ
-    RABBITMQ_USER: str = os.getenv("RABBITMQ_USER", "guest")
-    RABBITMQ_PASSWORD: str = os.getenv("RABBITMQ_PASSWORD", "guest")
-    RABBITMQ_HOST: str = os.getenv("RABBITMQ_HOST", "rabbitmq")
-    RABBITMQ_PORT: int = int(os.getenv("RABBITMQ_PORT", "5672"))
-    RABBITMQ_VHOST: str = os.getenv("RABBITMQ_VHOST", "/")
-    RABBITMQ_URL: str = f"amqp://{RABBITMQ_USER}:{RABBITMQ_PASSWORD}@{RABBITMQ_HOST}:{RABBITMQ_PORT}/{RABBITMQ_VHOST}"
+    RABBITMQ_USER: str
+    RABBITMQ_PASSWORD: str
+    RABBITMQ_HOST: str
+    RABBITMQ_PORT: int
+    RABBITMQ_VHOST: str
+    RABBITMQ_URL: str | None = None
 
     # Service URLs
-    CONTENT_SERVICE_URL: str = os.getenv("CONTENT_SERVICE_URL", "http://content_service:8003")
-    PROFILE_SERVICE_URL: str = os.getenv("PROFILE_SERVICE_URL", "http://profile_service:8002")
-    SOCIAL_SERVICE_URL: str = os.getenv("SOCIAL_SERVICE_URL", "http://social_service:8008")
-    AUTH_SERVICE_URL: str = os.getenv("AUTH_SERVICE_URL", "http://auth_service:8001")
+    CONTENT_SERVICE_URL: str
+    PROFILE_SERVICE_URL: str
+    SOCIAL_SERVICE_URL: str
+    AUTH_SERVICE_URL: str
 
     # Recommendation settings
     RECOMMENDATION_CACHE_TTL: int = int(os.getenv("RECOMMENDATION_CACHE_TTL", "3600"))  # 1 hour
@@ -50,14 +53,32 @@ class Settings(BaseSettings):
     CORS_METHODS: list = ["*"]
     CORS_HEADERS: list = ["*"]
 
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
+    model_config = SettingsConfigDict(
+        env_file=env_file, extra="ignore", env_file_encoding="utf-8"
+    )
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if not self.DATABASE_URL:
+            self.DATABASE_URL = PostgresDsn.build(
+                scheme="postgresql+psycopg2",
+                username=self.POSTGRES_USER,
+                password=self.POSTGRES_PASSWORD,
+                host=self.POSTGRES_HOST,
+                port=self.POSTGRES_PORT,
+                path=self.POSTGRES_DB,
+            )
+
+        if not self.REDIS_URL:
+            self.REDIS_URL = RedisDsn.build(
+                scheme=self.CONNECTION_METHOD,
+                host=self.REDIS_HOST,
+                port=self.REDIS_PORT,
+                path=str(self.REDIS_DB)
+            )
+
+        if not self.RABBITMQ_URL:
+            self.RABBITMQ_URL = f"amqp://{self.RABBITMQ_USER}:{self.RABBITMQ_PASSWORD}@{self.RABBITMQ_HOST}:{self.RABBITMQ_PORT}/{self.RABBITMQ_VHOST}"
 
 
-@lru_cache()
-def get_settings() -> Settings:
-    return Settings()
-
-
-settings = get_settings()
+settings = Settings()

@@ -17,7 +17,5 @@ class Database:
             yield session
 
 
-db_url = settings.DATABASE_URL
-database = Database(db_url)
-
+database = Database(settings.DATABASE_URL.unicode_string())
 Base = declarative_base()

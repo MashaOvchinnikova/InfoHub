@@ -12,7 +12,7 @@ class Settings(BaseSettings):
 
     # Database URL and schema
     DATABASE_SCHEMA: str = "search_service_schema"
-    DATABASE_URL: str = "postgresql://postgres:Tomlinson91@postgres:5432/infohub"
+    DATABASE_URL: str = "postgresql://postgres:Tomlinson91@localhost:5432/infohub"
 
     # Elasticsearch
     ELASTICSEARCH_HOST: str = os.getenv("ELASTICSEARCH_HOST", "elasticsearch")

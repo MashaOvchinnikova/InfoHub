@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
     # Database URL and schema
     DATABASE_SCHEMA: str = "admin_service_schema"
-    DATABASE_URL: str = "postgresql://postgres:Tomlinson91@postgres:5432/infohub"
+    DATABASE_URL: str = "postgresql://postgres:Tomlinson91@localhost:5432/infohub"
 
     # JWT Settings
     JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY", "super_secret_jwt_key_change_in_production")

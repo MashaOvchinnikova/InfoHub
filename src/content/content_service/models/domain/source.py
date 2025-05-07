@@ -27,7 +27,6 @@ class Source(Base):
     Модель для информационных источников.
     """
     __tablename__ = "source"
-    __table_args__ = {"schema": "content_service_schema"}
 
     source_id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
     title = Column(String, nullable=False, index=True)
@@ -56,7 +55,6 @@ class Tag(Base):
     Модель для тегов источников.
     """
     __tablename__ = "tag"
-    __table_args__ = {"schema": "content_service_schema"}
 
     tag_id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
     name = Column(String, nullable=False, index=True, unique=True)
@@ -76,12 +74,10 @@ class SourceTag(Base):
     Связующая модель между источниками и тегами.
     """
     __tablename__ = "source_tag"
-    __table_args__ = {"schema": "content_service_schema"}
-
 
     source_tag_id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
-    source_id = Column(UUID(as_uuid=True), ForeignKey("content_service_schema.source.source_id"), nullable=False)
-    tag_id = Column(UUID(as_uuid=True), ForeignKey("content_service_schema.tag.tag_id"), nullable=False)
+    source_id = Column(UUID(as_uuid=True), ForeignKey("source.source_id"), nullable=False)
+    tag_id = Column(UUID(as_uuid=True), ForeignKey("tag.tag_id"), nullable=False)
 
     # Связи
     source = relationship("Source", back_populates="tags")
@@ -97,11 +93,10 @@ class Rating(Base):
     Модель для оценок источников пользователями.
     """
     __tablename__ = "rating"
-    __table_args__ = {"schema": "content_service_schema"}
 
     rating_id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), nullable=False)
-    source_id = Column(UUID(as_uuid=True), ForeignKey("content_service_schema.source.source_id"), nullable=False)
+    source_id = Column(UUID(as_uuid=True), ForeignKey("source.source_id"), nullable=False)
     value = Column(Integer, nullable=False)  # например от 1 до 5
     created_date = Column(DateTime, default=datetime.utcnow)
     updated_date = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

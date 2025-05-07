@@ -33,7 +33,6 @@ class ParserTask(Base):
     Модель для задачи парсинга источников.
     """
     __tablename__ = "parser_tasks"
-    __table_args__ = {"schema": "parser_service_schema"}
 
     # Основные поля
     task_id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
@@ -70,11 +69,9 @@ class ScheduledParserTask(Base):
     Модель для периодически запускаемых задач парсинга.
     """
     __tablename__ = "scheduled_parser_tasks"
-    __table_args__ = {"schema": "parser_service_schema"}
-
 
     scheduled_task_id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
-    task_id = Column(UUID(as_uuid=True), ForeignKey("parser_service_schema.parser_tasks.task_id"), nullable=False)
+    task_id = Column(UUID(as_uuid=True), ForeignKey("parser_tasks.task_id"), nullable=False)
 
     # Настройки расписания (в формате cron или интервал)
     schedule_type = Column(String(20), nullable=False)  # 'cron' или 'interval'
@@ -98,11 +95,9 @@ class ParsedSource(Base):
     Промежуточная модель для хранения данных перед передачей в основной сервис контента.
     """
     __tablename__ = "parsed_sources"
-    __table_args__ = {"schema": "parser_service_schema"}
-
 
     source_id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
-    task_id = Column(UUID(as_uuid=True), ForeignKey("parser_service_schema.parser_tasks.task_id"), nullable=False)
+    task_id = Column(UUID(as_uuid=True), ForeignKey("parser_tasks.task_id"), nullable=False)
 
     # Данные источника
     url = Column(String(2048), nullable=False, unique=True, index=True)

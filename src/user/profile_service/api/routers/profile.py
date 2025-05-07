@@ -7,7 +7,7 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from shared.dependencies import authentication_required
+from src.user.profile_service.api.dependencies import authentication_required
 from src.user.profile_service.models.schemas.user_profile import (
     UserProfile, UserProfileCreate, UserProfileUpdate, Activity, ActivityCreate
 )

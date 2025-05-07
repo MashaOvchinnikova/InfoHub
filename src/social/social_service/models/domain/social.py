@@ -16,7 +16,6 @@ class Subscription(Base):
     Модель для подписок пользователей друг на друга.
     """
     __tablename__ = "subscription"
-    __table_args__ = {"schema": "social_service_schema"}
 
     subscription_id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
     follower_id = Column(UUID(as_uuid=True), nullable=False, index=True)
@@ -33,12 +32,11 @@ class Comment(Base):
     Модель для комментариев к источникам.
     """
     __tablename__ = "comment"
-    __table_args__ = {"schema": "social_service_schema"}
 
     comment_id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), nullable=False)
     source_id = Column(UUID(as_uuid=True), nullable=False)
-    parent_comment_id = Column(UUID(as_uuid=True), ForeignKey("social_service_schema.comment.comment_id"), nullable=True)
+    parent_comment_id = Column(UUID(as_uuid=True), ForeignKey("comment.comment_id"), nullable=True)
     content = Column(Text, nullable=False)
     created_date = Column(DateTime, default=datetime.utcnow)
     updated_date = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
